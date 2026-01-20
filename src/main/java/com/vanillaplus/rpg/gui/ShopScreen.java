@@ -541,12 +541,12 @@ public class ShopScreen extends BaseRpgScreen {
             drawCenteredText(graphics, "▼", scrollX + 10, scrollDownY + 4, canScrollDown ? COLOR_WHITE_TEXT : 0x60FFFFFF);
         }
         
-        // Scroll position indicator
+        // Scroll position indicator (above footer instructions)
         int totalItems = filteredItems.size();
         int firstVisible = scrollOffset * GRID_COLS + 1;
         int lastVisible = Math.min((scrollOffset + VISIBLE_ROWS) * GRID_COLS, totalItems);
         String scrollText = "§7(" + firstVisible + "-" + lastVisible + " of " + totalItems + ")";
-        drawCenteredText(graphics, scrollText, windowX + windowWidth / 2, windowY + windowHeight - 20, COLOR_GRAY_TEXT);
+        drawCenteredText(graphics, scrollText, windowX + windowWidth / 2, windowY + windowHeight - 35, COLOR_GRAY_TEXT);
         
         // Draw item grid
         for (int row = 0; row < VISIBLE_ROWS; row++) {

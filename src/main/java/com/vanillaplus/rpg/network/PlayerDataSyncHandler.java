@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -251,7 +252,7 @@ public class PlayerDataSyncHandler {
                     case 1 -> RewardOverlay.showCombatReward(payload.xp(), payload.money(), true);  // Monster
                     case 2 -> RewardOverlay.showCombatReward(payload.xp(), payload.money(), false); // Animal
                     case 3 -> RewardOverlay.showLevelUp(payload.xp(), payload.money()); // Level up (xp field = new level)
-                    case 4 -> RewardOverlay.showSmeltingReward(payload.xp(), payload.money()); // Smelting
+                    case 4 -> showSmeltingActionBar(context.client(), payload.xp(), payload.money()); // Smelting - action bar
                     default -> RewardOverlay.showReward(payload.xp(), payload.money()); // General reward
                 }
             });
@@ -272,6 +273,25 @@ public class PlayerDataSyncHandler {
         });
         
         LOGGER.info("Client-side network handlers registered");
+    }
+    
+    /**
+     * Show smelting reward in action bar (more visible than overlay)
+     */
+    private static void showSmeltingActionBar(Minecraft minecraft, int xp, long money) {
+        if (minecraft.player == null) return;
+        
+        StringBuilder msg = new StringBuilder("§d🔥 ");
+        
+        if (xp > 0) {
+            msg.append("§d+").append(xp).append(" XP");
+        }
+        if (money > 0) {
+            if (xp > 0) msg.append("  ");
+            msg.append("§a+$").append(money);
+        }
+        
+        minecraft.player.displayClientMessage(net.minecraft.network.chat.Component.literal(msg.toString()), true);
     }
     
     /**

@@ -1,8 +1,8 @@
 # 📚 Minecraft 1.21.11 Fabric Modding Reference
 
-**Comprehensive, production-tested reference for Minecraft 1.21.11 Fabric mod development**
+**Universal reference guide for Fabric 1.21.11 mod development - designed to be copied across all mod projects**
 
-> ✅ **Production-Tested**: All patterns verified in Pocket Life mod - a full-featured production mod with 7,800+ lines of code, 5 modules, tool tier systems, economy, and polished UI/UX.
+> ✅ **Production-Tested**: All patterns verified in real production mods with thousands of lines of code
 
 ---
 
@@ -10,50 +10,64 @@
 
 **THIS DOCUMENTATION IS EXCLUSIVELY FOR MINECRAFT 1.21.11**
 
-Using this with any other version (1.20.x, 1.21.0, 1.21.4, etc.) will cause compilation errors, runtime crashes, and broken functionality. Version-specific changes include:
-
-- NBT API now returns `Optional<Tag>` instead of nullable
-- Enchantment system completely redesigned with registry-based `Holder<Enchantment>`
-- Command system uses `CommandSourceStack` instead of `ServerCommandSource`
+Using this with any other version will cause errors. Version-specific changes include:
+- NBT API returns `Optional<Tag>` instead of nullable
+- Enchantment system uses registry-based `Holder<Enchantment>`
+- Command system uses `CommandSourceStack` 
 - Component API requires parenthesized ternary operators
-- `Items.WATCH` removed (use `Items.CLOCK`)
 - **Mojang mappings required** (`ServerPlayer`, not `PlayerEntity`)
 
 ---
 
 ## 📖 Documentation Index
 
+### Core Setup & APIs
 | Guide | Description | When to Use |
 |-------|-------------|-------------|
 | **[01_SETUP.md](01_SETUP.md)** | Complete project setup from scratch | Starting new project |
 | **[02_CORE_API.md](02_CORE_API.md)** | Core APIs, breaking changes, mappings | Understanding 1.21.11 APIs |
-| **[03_GUI_SYSTEMS.md](03_GUI_SYSTEMS.md)** | SGUI-based inventory GUIs | Building interactive menus |
 | **[04_COMMANDS.md](04_COMMANDS.md)** | Brigadier command registration | Adding chat commands |
 | **[05_DATA_STORAGE.md](05_DATA_STORAGE.md)** | NBT persistence, player data | Saving mod data |
 | **[06_RECIPES.md](06_RECIPES.md)** | Crafting recipes (shaped/shapeless) | Adding custom recipes |
-| **[07_TROUBLESHOOTING.md](07_TROUBLESHOOTING.md)** | Common errors and solutions | Fixing compilation/runtime errors |
-| **[08_PATTERNS.md](08_PATTERNS.md)** | Copy-paste code patterns | Quick implementation |
-| **[09_ADVANCED.md](09_ADVANCED.md)** | Complex systems (pagination, economy) | Advanced features |
+| **[12_API_CHANGES_1.21.11.md](12_API_CHANGES_1.21.11.md)** | Critical API changes | Migrating or troubleshooting |
+
+### GUI Development (⭐ PREFERRED METHOD)
+| Guide | Description | When to Use |
+|-------|-------------|-------------|
+| **[GUI_BEST_PRACTICES.md](GUI_BEST_PRACTICES.md)** | **⭐ RECOMMENDED** Pure DrawContext API patterns | Creating custom GUIs |
+| **[03_GUI_SYSTEMS.md](03_GUI_SYSTEMS.md)** | Legacy SGUI-based inventory GUIs | Alternative approach (not recommended) |
 | **[10_GUI_UX_PATTERNS.md](10_GUI_UX_PATTERNS.md)** | Professional UI/UX design patterns | Creating polished interfaces |
-| **[11_GUI_DESIGN_GUIDE.md](11_GUI_DESIGN_GUIDE.md)** | Complete GUI design philosophy & examples | Building beautiful, functional GUIs |
-| **[12_API_CHANGES_1.21.11.md](12_API_CHANGES_1.21.11.md)** | Critical API changes from earlier versions | Migrating or troubleshooting |
+| **[11_GUI_DESIGN_GUIDE.md](11_GUI_DESIGN_GUIDE.md)** | Complete GUI design philosophy | Building beautiful GUIs |
+| **[15_SHOP_LAYOUT_SORTING.md](15_SHOP_LAYOUT_SORTING.md)** | Scrollable shop implementation | Real-world GUI example |
+
+### Advanced Topics
+| Guide | Description | When to Use |
+|-------|-------------|-------------|
+| **[08_PATTERNS.md](08_PATTERNS.md)** | Copy-paste code patterns | Quick implementation |
+| **[09_ADVANCED.md](09_ADVANCED.md)** | Complex systems | Advanced features |
+| **[16_SMELTING_REWARDS.md](16_SMELTING_REWARDS.md)** | Mixin system for furnace rewards | Hooking into game mechanics |
 | **[13_TESTING_CHECKLIST.md](13_TESTING_CHECKLIST.md)** | Testing checklist for mods | Pre-release verification |
-| **[14_SMELTING_REWARDS.md](14_SMELTING_REWARDS.md)** | **Mixin system for furnace rewards** | Hooking into furnace mechanics |
-| **[15_SHOP_LAYOUT_SORTING.md](15_SHOP_LAYOUT_SORTING.md)** | **Shop GUI layout & item sorting** | Creating organized shop interfaces |
+| **[07_TROUBLESHOOTING.md](07_TROUBLESHOOTING.md)** | Common errors and solutions | Fixing issues |
+
+### Reference & Learning
+| Guide | Description | When to Use |
+|-------|-------------|-------------|
+| **[PAST_MOD_EXPERIENCES.md](PAST_MOD_EXPERIENCES.md)** | Real-world examples & lessons learned | Learning from production mods |
 
 ---
 
-## 🎯 Real-World Example: Pocket Life Mod
+## 🎯 GUI Development Philosophy
 
-This documentation is based on **Pocket Life**, a production-ready mod featuring:
-- 🎨 **Premium UI/UX** - "No Boring Grey Boxes" design philosophy
-- ⚖️ **Balanced Economy** - Tool tiers, durability, exponential costs
-- 🔧 **5 Production Modules** - Quarry, Estate, Arena, Laboratory, Terminal
-- 📊 **Data Persistence** - NBT-based player data system
-- 🎵 **Sound Design** - Context-aware audio feedback
-- 🎯 **Combo System** - Multi-operation bonuses
+**This reference strongly recommends using pure DrawContext API over external GUI libraries.**
 
-**GitHub**: https://github.com/Uipg9/pocketlife
+### Why Pure DrawContext? ✅
+1. **Version Independence** - No waiting for library updates
+2. **Full Control** - Complete customization of every element
+3. **Performance** - Direct rendering without overhead
+4. **Maintainability** - Pure Mojang/Fabric code
+5. **No Dependencies** - Reduces conflicts
+
+See **[GUI_BEST_PRACTICES.md](GUI_BEST_PRACTICES.md)** for the preferred GUI approach.
 
 ---
 

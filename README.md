@@ -43,10 +43,11 @@ A clean, code-only Minecraft Fabric mod for **1.21.11** that adds an RPG progres
 
 ### 🔥 Smithing System
 - Smelting items in furnaces gives vanilla Minecraft XP and money!
+- **Action bar notifications** show rewards instantly
 - Higher Smithing skill level = more rewards (+5% per level)
 - Works with all furnace types (furnace, blast furnace, smoker)
 - Rewards for smelting: Iron, Gold, Copper, Netherite, Glass, Bricks, Charcoal, etc.
-- Instant notification when taking smelted items
+- Instant feedback when taking smelted items
 
 ## Screenshots
 
@@ -130,7 +131,7 @@ A clean, code-only Minecraft Fabric mod for **1.21.11** that adds an RPG progres
 | Charcoal | 1 | $1 |
 | Brick | 1 | $1 |
 
-*XP is vanilla Minecraft XP (used for enchanting). Higher Smithing level = +5% bonus per level to both XP and money!*
+*XP is vanilla Minecraft XP (used for enchanting). Higher Smithing level = +5% bonus per level to both XP and money! Rewards displayed in action bar for instant visibility.*
 
 ### Level Formula
 - XP needed = Level * 100

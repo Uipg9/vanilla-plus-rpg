@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2026-01-20
+
+### Fixed
+- **Smelting Notifications**: Now display via action bar instead of overlay (more visible)
+- **Shop Screen**: Scroll position indicator moved up to avoid overlap with footer instructions
+
+### Changed
+- Smelting rewards now show as action bar messages ("§d🔥 +3 XP  §a+$2")
+- More reliable notification system for batch operations
+
 ## [1.1.0] - 2026-01-20
 
 ### Fixed
