@@ -1,5 +1,6 @@
 package com.vanillaplus.rpg.gui;
 
+import com.vanillaplus.rpg.client.HudRenderer;
 import com.vanillaplus.rpg.economy.ItemPricing;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -10,30 +11,54 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.core.registries.BuiltInRegistries;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Shop Screen - Catalog style shop with procedural rendering
  * Features:
  * - Grid layout of items from pricing data
+ * - Category tabs for better organization
+ * - Balance display at top
+ * - Left-click to buy, Right-click to sell
  * - Hover highlight with white box
- * - Click to buy 1, Shift+Click to buy stack
  * - Hidden Black Market button when holding Shift
  * 
  * Uses Button widgets for click handling, custom rendering on top
  */
 public class ShopScreen extends BaseRpgScreen {
     
+    // Layout constants
     private static final int GRID_COLS = 6;
     private static final int GRID_ROWS = 4;
     private static final int ITEM_SIZE = 24;
     private static final int ITEM_SPACING = 4;
     
+    // Categories for organizing items
+    public enum ShopCategory {
+        ALL("All", 0xFFFFD700),
+        TOOLS("Tools", 0xFF888888),
+        WEAPONS("Weapons", 0xFFFF5555),
+        ARMOR("Armor", 0xFF5555FF),
+        FOOD("Food", 0xFF55FF55),
+        BUILDING("Building", 0xFFAA8844),
+        FARMING("Farming", 0xFF44AA44),
+        ORES("Ores", 0xFFAAFFFF),
+        MISC("Misc", 0xFFAAAAAA);
+        
+        public final String name;
+        public final int color;
+        
+        ShopCategory(String name, int color) {
+            this.name = name;
+            this.color = color;
+        }
+    }
+    
     private final boolean isBlackMarket;
     private int currentPage = 0;
+    private ShopCategory currentCategory = ShopCategory.ALL;
     private List<Item> shopItems;
+    private List<Item> filteredItems;
     
     // Grid positioning
     private int gridStartX;
@@ -47,13 +72,100 @@ public class ShopScreen extends BaseRpgScreen {
     private Button backButton;
     private Button prevButton;
     private Button nextButton;
-    private Button blackMarketButton;
     private List<Button> itemButtons = new ArrayList<>();
+    private List<Button> categoryButtons = new ArrayList<>();
+    
+    // Category item mappings
+    private static final Map<Item, ShopCategory> ITEM_CATEGORIES = new HashMap<>();
+    
+    static {
+        // Tools
+        for (Item item : List.of(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.GOLDEN_PICKAXE, Items.DIAMOND_PICKAXE, Items.NETHERITE_PICKAXE,
+                Items.WOODEN_AXE, Items.STONE_AXE, Items.IRON_AXE, Items.GOLDEN_AXE, Items.DIAMOND_AXE, Items.NETHERITE_AXE,
+                Items.WOODEN_SHOVEL, Items.STONE_SHOVEL, Items.IRON_SHOVEL, Items.GOLDEN_SHOVEL, Items.DIAMOND_SHOVEL, Items.NETHERITE_SHOVEL,
+                Items.WOODEN_HOE, Items.STONE_HOE, Items.IRON_HOE, Items.GOLDEN_HOE, Items.DIAMOND_HOE, Items.NETHERITE_HOE,
+                Items.FISHING_ROD, Items.SHEARS, Items.FLINT_AND_STEEL, Items.COMPASS, Items.CLOCK, Items.SPYGLASS,
+                Items.BRUSH, Items.BUCKET, Items.WATER_BUCKET, Items.LAVA_BUCKET)) {
+            ITEM_CATEGORIES.put(item, ShopCategory.TOOLS);
+        }
+        
+        // Weapons
+        for (Item item : List.of(Items.WOODEN_SWORD, Items.STONE_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD, Items.DIAMOND_SWORD, Items.NETHERITE_SWORD,
+                Items.BOW, Items.CROSSBOW, Items.ARROW, Items.SPECTRAL_ARROW, Items.TIPPED_ARROW, Items.TRIDENT, Items.MACE,
+                Items.SHIELD)) {
+            ITEM_CATEGORIES.put(item, ShopCategory.WEAPONS);
+        }
+        
+        // Armor
+        for (Item item : List.of(Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS,
+                Items.CHAINMAIL_HELMET, Items.CHAINMAIL_CHESTPLATE, Items.CHAINMAIL_LEGGINGS, Items.CHAINMAIL_BOOTS,
+                Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS,
+                Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS,
+                Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS,
+                Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS,
+                Items.TURTLE_HELMET, Items.ELYTRA)) {
+            ITEM_CATEGORIES.put(item, ShopCategory.ARMOR);
+        }
+        
+        // Food
+        for (Item item : List.of(Items.APPLE, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE, Items.BREAD, Items.COOKED_BEEF, Items.COOKED_PORKCHOP,
+                Items.COOKED_CHICKEN, Items.COOKED_MUTTON, Items.COOKED_SALMON, Items.COOKED_COD, Items.COOKED_RABBIT,
+                Items.BAKED_POTATO, Items.PUMPKIN_PIE, Items.COOKIE, Items.CAKE, Items.MELON_SLICE, Items.CARROT,
+                Items.SWEET_BERRIES, Items.GLOW_BERRIES, Items.HONEY_BOTTLE, Items.MILK_BUCKET, Items.MUSHROOM_STEW,
+                Items.RABBIT_STEW, Items.SUSPICIOUS_STEW, Items.BEETROOT_SOUP)) {
+            ITEM_CATEGORIES.put(item, ShopCategory.FOOD);
+        }
+        
+        // Building
+        for (Item item : List.of(Items.OAK_PLANKS, Items.SPRUCE_PLANKS, Items.BIRCH_PLANKS, Items.JUNGLE_PLANKS, Items.ACACIA_PLANKS, Items.DARK_OAK_PLANKS,
+                Items.COBBLESTONE, Items.STONE, Items.STONE_BRICKS, Items.BRICKS, Items.DEEPSLATE_BRICKS,
+                Items.GLASS, Items.GLASS_PANE, Items.WHITE_WOOL, Items.WHITE_CONCRETE, Items.TERRACOTTA,
+                Items.SANDSTONE, Items.RED_SANDSTONE, Items.QUARTZ_BLOCK, Items.PRISMARINE, Items.SEA_LANTERN,
+                Items.GLOWSTONE, Items.TORCH, Items.LANTERN, Items.OAK_DOOR, Items.IRON_DOOR, Items.LADDER,
+                Items.CHEST, Items.BARREL, Items.CRAFTING_TABLE, Items.FURNACE, Items.BLAST_FURNACE, Items.SMOKER,
+                Items.ANVIL, Items.GRINDSTONE, Items.SMITHING_TABLE, Items.LECTERN, Items.BOOKSHELF,
+                Items.ENCHANTING_TABLE, Items.BREWING_STAND, Items.CAULDRON, Items.RED_BED)) {
+            ITEM_CATEGORIES.put(item, ShopCategory.BUILDING);
+        }
+        
+        // Farming
+        for (Item item : List.of(Items.WHEAT_SEEDS, Items.WHEAT, Items.CARROT, Items.POTATO, Items.BEETROOT, Items.BEETROOT_SEEDS,
+                Items.MELON_SEEDS, Items.PUMPKIN_SEEDS, Items.SUGAR_CANE, Items.BAMBOO, Items.CACTUS,
+                Items.BONE_MEAL, Items.LEAD, Items.NAME_TAG, Items.SADDLE, Items.EGG,
+                Items.HAY_BLOCK, Items.COMPOSTER)) {
+            ITEM_CATEGORIES.put(item, ShopCategory.FARMING);
+        }
+        
+        // Ores and Materials
+        for (Item item : List.of(Items.COAL, Items.RAW_IRON, Items.RAW_GOLD, Items.RAW_COPPER, Items.IRON_INGOT, Items.GOLD_INGOT, Items.COPPER_INGOT,
+                Items.DIAMOND, Items.EMERALD, Items.LAPIS_LAZULI, Items.REDSTONE, Items.QUARTZ,
+                Items.NETHERITE_SCRAP, Items.NETHERITE_INGOT, Items.AMETHYST_SHARD,
+                Items.IRON_BLOCK, Items.GOLD_BLOCK, Items.DIAMOND_BLOCK, Items.EMERALD_BLOCK, Items.LAPIS_BLOCK,
+                Items.REDSTONE_BLOCK, Items.COPPER_BLOCK, Items.NETHERITE_BLOCK, Items.COAL_BLOCK,
+                Items.BLAZE_ROD, Items.BLAZE_POWDER, Items.ENDER_PEARL, Items.ENDER_EYE, Items.GHAST_TEAR,
+                Items.MAGMA_CREAM, Items.NETHER_STAR, Items.DRAGON_BREATH, Items.GUNPOWDER, Items.SLIME_BALL)) {
+            ITEM_CATEGORIES.put(item, ShopCategory.ORES);
+        }
+        
+        // Misc items (anything else)
+        for (Item item : List.of(Items.BOOK, Items.PAPER, Items.INK_SAC, Items.GLOW_INK_SAC, Items.BONE, Items.STRING,
+                Items.HONEYCOMB, Items.LEATHER, Items.RABBIT_HIDE, Items.FEATHER, Items.EXPERIENCE_BOTTLE,
+                Items.FIREWORK_ROCKET, Items.FIREWORK_STAR, Items.SHULKER_SHELL, Items.SHULKER_BOX,
+                Items.TOTEM_OF_UNDYING, Items.PAINTING, Items.ITEM_FRAME, Items.GLOW_ITEM_FRAME, Items.ARMOR_STAND,
+                Items.BELL, Items.IRON_BARS, Items.LIGHTNING_ROD, Items.RAIL, Items.POWERED_RAIL, Items.MINECART,
+                Items.CHEST_MINECART, Items.OAK_BOAT, Items.CHICKEN_SPAWN_EGG, Items.COW_SPAWN_EGG,
+                Items.PIG_SPAWN_EGG, Items.SHEEP_SPAWN_EGG, Items.WOLF_SPAWN_EGG, Items.HORSE_SPAWN_EGG,
+                Items.VILLAGER_SPAWN_EGG, Items.LEVER, Items.REDSTONE_TORCH, Items.REPEATER, Items.COMPARATOR,
+                Items.PISTON, Items.STICKY_PISTON, Items.OBSERVER, Items.HOPPER, Items.DROPPER, Items.DISPENSER)) {
+            ITEM_CATEGORIES.put(item, ShopCategory.MISC);
+        }
+    }
     
     public ShopScreen(boolean blackMarket) {
         super(Component.literal(blackMarket ? "§5§l✦ Black Market ✦" : "§6✦ Shop ✦"));
         this.isBlackMarket = blackMarket;
         loadShopItems();
+        applyFilter();
     }
     
     private void loadShopItems() {
@@ -76,20 +188,161 @@ public class ShopScreen extends BaseRpgScreen {
         }
     }
     
+    private void applyFilter() {
+        if (currentCategory == ShopCategory.ALL || isBlackMarket) {
+            filteredItems = new ArrayList<>(shopItems);
+        } else {
+            filteredItems = new ArrayList<>();
+            for (Item item : shopItems) {
+                ShopCategory cat = ITEM_CATEGORIES.getOrDefault(item, ShopCategory.MISC);
+                if (cat == currentCategory) {
+                    filteredItems.add(item);
+                }
+            }
+        }
+        // Sort items within the filter
+        sortItemsLogically();
+        currentPage = 0;
+    }
+    
+    /**
+     * Sort items logically within their category
+     * Groups similar items together (all pickaxes, then all axes, etc.)
+     */
+    private void sortItemsLogically() {
+        // Define item order priorities for logical grouping
+        Map<Item, Integer> itemOrder = new HashMap<>();
+        int order = 0;
+        
+        // Tools - by type, then by tier
+        // Pickaxes
+        for (Item item : List.of(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, 
+                Items.GOLDEN_PICKAXE, Items.DIAMOND_PICKAXE, Items.NETHERITE_PICKAXE)) {
+            itemOrder.put(item, order++);
+        }
+        // Axes
+        for (Item item : List.of(Items.WOODEN_AXE, Items.STONE_AXE, Items.IRON_AXE, 
+                Items.GOLDEN_AXE, Items.DIAMOND_AXE, Items.NETHERITE_AXE)) {
+            itemOrder.put(item, order++);
+        }
+        // Shovels
+        for (Item item : List.of(Items.WOODEN_SHOVEL, Items.STONE_SHOVEL, Items.IRON_SHOVEL, 
+                Items.GOLDEN_SHOVEL, Items.DIAMOND_SHOVEL, Items.NETHERITE_SHOVEL)) {
+            itemOrder.put(item, order++);
+        }
+        // Hoes
+        for (Item item : List.of(Items.WOODEN_HOE, Items.STONE_HOE, Items.IRON_HOE, 
+                Items.GOLDEN_HOE, Items.DIAMOND_HOE, Items.NETHERITE_HOE)) {
+            itemOrder.put(item, order++);
+        }
+        // Misc tools
+        for (Item item : List.of(Items.FISHING_ROD, Items.SHEARS, Items.FLINT_AND_STEEL, 
+                Items.COMPASS, Items.CLOCK, Items.SPYGLASS, Items.BRUSH,
+                Items.BUCKET, Items.WATER_BUCKET, Items.LAVA_BUCKET)) {
+            itemOrder.put(item, order++);
+        }
+        
+        // Weapons - Swords by tier, then ranged
+        for (Item item : List.of(Items.WOODEN_SWORD, Items.STONE_SWORD, Items.IRON_SWORD, 
+                Items.GOLDEN_SWORD, Items.DIAMOND_SWORD, Items.NETHERITE_SWORD)) {
+            itemOrder.put(item, order++);
+        }
+        for (Item item : List.of(Items.BOW, Items.CROSSBOW, Items.TRIDENT, Items.MACE, Items.SHIELD,
+                Items.ARROW, Items.SPECTRAL_ARROW, Items.TIPPED_ARROW)) {
+            itemOrder.put(item, order++);
+        }
+        
+        // Armor - by tier, then by slot
+        // Leather
+        for (Item item : List.of(Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, 
+                Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS)) {
+            itemOrder.put(item, order++);
+        }
+        // Chainmail
+        for (Item item : List.of(Items.CHAINMAIL_HELMET, Items.CHAINMAIL_CHESTPLATE, 
+                Items.CHAINMAIL_LEGGINGS, Items.CHAINMAIL_BOOTS)) {
+            itemOrder.put(item, order++);
+        }
+        // Iron
+        for (Item item : List.of(Items.IRON_HELMET, Items.IRON_CHESTPLATE, 
+                Items.IRON_LEGGINGS, Items.IRON_BOOTS)) {
+            itemOrder.put(item, order++);
+        }
+        // Golden
+        for (Item item : List.of(Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, 
+                Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS)) {
+            itemOrder.put(item, order++);
+        }
+        // Diamond
+        for (Item item : List.of(Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, 
+                Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS)) {
+            itemOrder.put(item, order++);
+        }
+        // Netherite
+        for (Item item : List.of(Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, 
+                Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS)) {
+            itemOrder.put(item, order++);
+        }
+        // Special armor
+        for (Item item : List.of(Items.TURTLE_HELMET, Items.ELYTRA)) {
+            itemOrder.put(item, order++);
+        }
+        
+        // Food - cooked meats, then other food
+        for (Item item : List.of(Items.COOKED_BEEF, Items.COOKED_PORKCHOP, Items.COOKED_CHICKEN,
+                Items.COOKED_MUTTON, Items.COOKED_RABBIT, Items.COOKED_SALMON, Items.COOKED_COD,
+                Items.BREAD, Items.BAKED_POTATO, Items.APPLE, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE,
+                Items.CARROT, Items.GOLDEN_CARROT, Items.MELON_SLICE, Items.SWEET_BERRIES, Items.GLOW_BERRIES,
+                Items.COOKIE, Items.PUMPKIN_PIE, Items.CAKE, Items.HONEY_BOTTLE, Items.MILK_BUCKET,
+                Items.MUSHROOM_STEW, Items.RABBIT_STEW, Items.SUSPICIOUS_STEW, Items.BEETROOT_SOUP)) {
+            itemOrder.put(item, order++);
+        }
+        
+        // Ores - raw, then ingots, then blocks
+        for (Item item : List.of(Items.COAL, Items.RAW_COPPER, Items.COPPER_INGOT, Items.COPPER_BLOCK,
+                Items.RAW_IRON, Items.IRON_INGOT, Items.IRON_BLOCK,
+                Items.RAW_GOLD, Items.GOLD_INGOT, Items.GOLD_BLOCK,
+                Items.DIAMOND, Items.DIAMOND_BLOCK,
+                Items.EMERALD, Items.EMERALD_BLOCK,
+                Items.LAPIS_LAZULI, Items.LAPIS_BLOCK,
+                Items.REDSTONE, Items.REDSTONE_BLOCK,
+                Items.QUARTZ, Items.AMETHYST_SHARD,
+                Items.NETHERITE_SCRAP, Items.NETHERITE_INGOT, Items.NETHERITE_BLOCK, Items.COAL_BLOCK)) {
+            itemOrder.put(item, order++);
+        }
+        // Mob drops
+        for (Item item : List.of(Items.BLAZE_ROD, Items.BLAZE_POWDER, Items.ENDER_PEARL, Items.ENDER_EYE,
+                Items.GHAST_TEAR, Items.MAGMA_CREAM, Items.GUNPOWDER, Items.SLIME_BALL,
+                Items.NETHER_STAR, Items.DRAGON_BREATH)) {
+            itemOrder.put(item, order++);
+        }
+        
+        // Sort items
+        filteredItems.sort((a, b) -> {
+            int orderA = itemOrder.getOrDefault(a, 9999);
+            int orderB = itemOrder.getOrDefault(b, 9999);
+            if (orderA != orderB) {
+                return Integer.compare(orderA, orderB);
+            }
+            // Fall back to alphabetical by item name
+            return a.getDescriptionId().compareTo(b.getDescriptionId());
+        });
+    }
+    
     @Override
     protected void init() {
         super.init();
         
-        // Larger window for shop
-        windowWidth = Math.min(320, width - 20);
-        windowHeight = Math.min(280, height - 20);
+        // Wider window for shop with categories
+        windowWidth = Math.min(420, width - 20);
+        windowHeight = Math.min(360, height - 20);
         windowX = (width - windowWidth) / 2;
         windowY = (height - windowHeight) / 2;
         
-        // Calculate grid position
+        // Calculate grid position (shifted down for category tabs and balance)
         int gridWidth = GRID_COLS * (ITEM_SIZE + ITEM_SPACING) - ITEM_SPACING;
         gridStartX = windowX + (windowWidth - gridWidth) / 2;
-        gridStartY = windowY + 45;
+        gridStartY = windowY + 100; // More space for categories and balance
         
         // Add buttons
         addButtons();
@@ -98,22 +351,45 @@ public class ShopScreen extends BaseRpgScreen {
     private void addButtons() {
         // Clear old buttons
         itemButtons.clear();
+        categoryButtons.clear();
         clearWidgets();
         
         // Back button
         backButton = addRenderableWidget(Button.builder(Component.empty(), btn -> {
             playClickSound();
             Minecraft.getInstance().setScreen(new HubScreen());
-        }).bounds(windowX + 8, windowY + 8, 50, 16).build());
+        }).bounds(windowX + 8, windowY + 24, 50, 16).build());
         
-        // Previous page button
-        int totalPages = (int) Math.ceil((double) shopItems.size() / (GRID_COLS * GRID_ROWS));
+        // Category tabs (only for non-black market)
+        if (!isBlackMarket) {
+            int tabY = windowY + 44;
+            int tabWidth = 38;
+            int tabSpacing = 2;
+            int totalTabsWidth = ShopCategory.values().length * (tabWidth + tabSpacing) - tabSpacing;
+            int tabX = windowX + (windowWidth - totalTabsWidth) / 2; // Center categories
+            
+            for (ShopCategory cat : ShopCategory.values()) {
+                final ShopCategory category = cat;
+                Button catBtn = addRenderableWidget(Button.builder(Component.empty(), btn -> {
+                    playClickSound();
+                    currentCategory = category;
+                    applyFilter();
+                    refreshScreen();
+                }).bounds(tabX, tabY, tabWidth, 14).build());
+                categoryButtons.add(catBtn);
+                tabX += tabWidth + tabSpacing;
+            }
+        }
+        
+        // Previous page button - positioned below categories, to the left
+        int totalPages = (int) Math.ceil((double) filteredItems.size() / (GRID_COLS * GRID_ROWS));
+        int pageNavY = windowY + 64; // Below categories (which end at ~58)
         if (currentPage > 0) {
             prevButton = addRenderableWidget(Button.builder(Component.empty(), btn -> {
                 playClickSound();
                 currentPage--;
-                rebuildWidgets();
-            }).bounds(windowX + 10, windowY + 25, 20, 16).build());
+                refreshScreen();
+            }).bounds(windowX + 10, pageNavY, 24, 14).build());
         }
         
         // Next page button
@@ -121,26 +397,24 @@ public class ShopScreen extends BaseRpgScreen {
             nextButton = addRenderableWidget(Button.builder(Component.empty(), btn -> {
                 playClickSound();
                 currentPage++;
-                rebuildWidgets();
-            }).bounds(windowX + windowWidth - 30, windowY + 25, 20, 16).build());
+                refreshScreen();
+            }).bounds(windowX + windowWidth - 34, pageNavY, 24, 14).build());
         }
-        
-        // Black market button - only add if shift is held (checked on rebuild)
-        // Note: We don't add a permanent button widget since it would show when not needed
         
         // Item grid buttons
         int startIndex = currentPage * GRID_COLS * GRID_ROWS;
         for (int row = 0; row < GRID_ROWS; row++) {
             for (int col = 0; col < GRID_COLS; col++) {
                 int index = startIndex + row * GRID_COLS + col;
-                if (index >= shopItems.size()) break;
+                if (index >= filteredItems.size()) break;
                 
-                Item item = shopItems.get(index);
+                Item item = filteredItems.get(index);
                 int slotX = gridStartX + col * (ITEM_SIZE + ITEM_SPACING);
                 int slotY = gridStartY + row * (ITEM_SIZE + ITEM_SPACING);
                 
                 Button itemBtn = addRenderableWidget(Button.builder(Component.empty(), btn -> {
                     playClickSound();
+                    // Left click = buy
                     int amount = isShiftDown() ? (isBlackMarket ? 10 : 64) : 1;
                     sendBuyCommand(item, amount);
                 }).bounds(slotX, slotY, ITEM_SIZE, ITEM_SIZE).build());
@@ -149,56 +423,109 @@ public class ShopScreen extends BaseRpgScreen {
         }
     }
     
+    /**
+     * Refresh screen when page or category changes
+     */
+    private void refreshScreen() {
+        init();
+    }
+    
+    // Note: No @Override - method signature changed in 1.21.11
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // Right-click to sell
+        if (button == 1 && hoveredItem != null && !isBlackMarket) {
+            playClickSound();
+            int amount = isShiftDown() ? 64 : 1;
+            sendSellCommand(hoveredItem, amount);
+            return true;
+        }
+        // Let buttons handle click
+        return false;
+    }
+    
     @Override
     protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         hoveredItem = null;
         hoveredSlot = -1;
         
-        // Draw back button (over vanilla button)
+        // Draw balance at top
+        long balance = HudRenderer.getCachedMoney();
+        String balanceText = "§6Balance: §e$" + formatMoney(balance);
+        drawCenteredText(graphics, balanceText, windowX + windowWidth / 2, windowY + 10, COLOR_GOLD_TEXT);
+        
+        // Draw back button
         int backBtnX = windowX + 8;
-        int backBtnY = windowY + 8;
+        int backBtnY = windowY + 24;
         boolean backHovered = isMouseOver(mouseX, mouseY, backBtnX, backBtnY, 50, 16);
         drawStyledButton(graphics, backBtnX, backBtnY, 50, 16, "< Back", backHovered);
         
-        // Draw page navigation
-        int totalPages = (int) Math.ceil((double) shopItems.size() / (GRID_COLS * GRID_ROWS));
-        drawCenteredText(graphics, "Page " + (currentPage + 1) + "/" + totalPages, 
-            windowX + windowWidth / 2, windowY + 28, COLOR_GRAY_TEXT);
+        // Draw category tabs (only for non-black market)
+        if (!isBlackMarket) {
+            int tabWidth = 38;
+            int tabSpacing = 2;
+            int totalTabsWidth = ShopCategory.values().length * (tabWidth + tabSpacing) - tabSpacing;
+            int tabX = windowX + (windowWidth - totalTabsWidth) / 2; // Center categories
+            int tabY = windowY + 44;
+            
+            for (ShopCategory cat : ShopCategory.values()) {
+                boolean isSelected = (cat == currentCategory);
+                boolean isHovered = isMouseOver(mouseX, mouseY, tabX, tabY, tabWidth, 14);
+                
+                // Tab background
+                int bgColor = isSelected ? 0xCC444444 : (isHovered ? 0xCC333333 : 0xCC222222);
+                graphics.fill(tabX, tabY, tabX + tabWidth, tabY + 14, bgColor);
+                
+                // Tab border (highlight if selected)
+                int borderColor = isSelected ? cat.color : 0xFF555555;
+                drawBorder(graphics, tabX, tabY, tabWidth, 14, borderColor);
+                
+                // Tab text
+                int textColor = isSelected ? cat.color : (isHovered ? 0xFFFFFFFF : 0xFFAAAAAA);
+                int textWidth = font.width(cat.name);
+                graphics.drawString(font, cat.name, tabX + (tabWidth - textWidth) / 2, tabY + 3, textColor, true);
+                
+                tabX += tabWidth + tabSpacing;
+            }
+        }
         
-        // Previous/Next arrows (cover vanilla buttons)
+        // Draw page navigation - positioned below categories
+        int totalPages = Math.max(1, (int) Math.ceil((double) filteredItems.size() / (GRID_COLS * GRID_ROWS)));
+        int pageNavY = windowY + 64; // Below categories (which end at ~58)
+        drawCenteredText(graphics, "Page " + (currentPage + 1) + "/" + totalPages, 
+            windowX + windowWidth / 2, pageNavY + 2, COLOR_GRAY_TEXT);
+        
+        // Previous/Next arrows
         if (currentPage > 0) {
             int prevX = windowX + 10;
-            int prevY = windowY + 25;
-            boolean prevHover = isMouseOver(mouseX, mouseY, prevX, prevY, 20, 16);
-            graphics.fill(prevX, prevY, prevX + 20, prevY + 16, prevHover ? COLOR_BUTTON_HOVER : COLOR_BUTTON_BG);
-            drawText(graphics, "<<", prevX + 2, prevY + 4, prevHover ? COLOR_GOLD_TEXT : COLOR_WHITE_TEXT);
+            boolean prevHover = isMouseOver(mouseX, mouseY, prevX, pageNavY, 24, 14);
+            graphics.fill(prevX, pageNavY, prevX + 24, pageNavY + 14, prevHover ? COLOR_BUTTON_HOVER : COLOR_BUTTON_BG);
+            drawText(graphics, "<<", prevX + 5, pageNavY + 3, prevHover ? COLOR_GOLD_TEXT : COLOR_WHITE_TEXT);
         }
         if (currentPage < totalPages - 1) {
-            int nextX = windowX + windowWidth - 30;
-            int nextY = windowY + 25;
-            boolean nextHover = isMouseOver(mouseX, mouseY, nextX, nextY, 20, 16);
-            graphics.fill(nextX, nextY, nextX + 20, nextY + 16, nextHover ? COLOR_BUTTON_HOVER : COLOR_BUTTON_BG);
-            drawText(graphics, ">>", nextX + 2, nextY + 4, nextHover ? COLOR_GOLD_TEXT : COLOR_WHITE_TEXT);
+            int nextX = windowX + windowWidth - 34;
+            boolean nextHover = isMouseOver(mouseX, mouseY, nextX, pageNavY, 24, 14);
+            graphics.fill(nextX, pageNavY, nextX + 24, pageNavY + 14, nextHover ? COLOR_BUTTON_HOVER : COLOR_BUTTON_BG);
+            drawText(graphics, ">>", nextX + 5, pageNavY + 3, nextHover ? COLOR_GOLD_TEXT : COLOR_WHITE_TEXT);
         }
         
-        // Draw item grid (over vanilla buttons)
+        // Draw item grid
         int startIndex = currentPage * GRID_COLS * GRID_ROWS;
         for (int row = 0; row < GRID_ROWS; row++) {
             for (int col = 0; col < GRID_COLS; col++) {
                 int index = startIndex + row * GRID_COLS + col;
-                if (index >= shopItems.size()) break;
+                if (index >= filteredItems.size()) break;
                 
-                Item item = shopItems.get(index);
+                Item item = filteredItems.get(index);
                 int slotX = gridStartX + col * (ITEM_SIZE + ITEM_SPACING);
                 int slotY = gridStartY + row * (ITEM_SIZE + ITEM_SPACING);
                 
                 boolean isHovered = isMouseOver(mouseX, mouseY, slotX, slotY, ITEM_SIZE, ITEM_SIZE);
                 
-                // Draw slot background (covers vanilla button)
+                // Slot background
                 graphics.fill(slotX, slotY, slotX + ITEM_SIZE, slotY + ITEM_SIZE, 
                     isHovered ? 0x60FFFFFF : 0x40000000);
                 
-                // Draw border
+                // Border
                 drawBorder(graphics, slotX, slotY, ITEM_SIZE, ITEM_SIZE, 
                     isHovered ? COLOR_GOLD_BORDER : 0x80888888);
                 
@@ -218,19 +545,21 @@ public class ShopScreen extends BaseRpgScreen {
             drawItemTooltip(graphics, mouseX, mouseY);
         }
         
-        // Draw footer
-        String footerText = isBlackMarket 
-            ? "§5Click = Buy with XP Levels | Shift+Click = Buy 10"
-            : "§7Click = Buy 1 | Shift+Click = Buy 64";
-        drawCenteredText(graphics, footerText, windowX + windowWidth / 2, windowY + windowHeight - 30, COLOR_GRAY_TEXT);
+        // Draw footer with instructions
+        String footerText;
+        if (isBlackMarket) {
+            footerText = "§5Click = Buy with XP Levels | Shift+Click = Buy 10";
+        } else {
+            footerText = "§aLeft-Click = Buy §7| §cRight-Click = Sell §7| §eShift = x64";
+        }
+        drawCenteredText(graphics, footerText, windowX + windowWidth / 2, windowY + windowHeight - 20, COLOR_GRAY_TEXT);
         
         // Black Market button (only visible when shift held in normal shop)
         if (!isBlackMarket && isShiftDown()) {
             int bmBtnX = windowX + windowWidth - 100;
-            int bmBtnY = windowY + windowHeight - 22;
+            int bmBtnY = windowY + windowHeight - 38;
             boolean bmHovered = isMouseOver(mouseX, mouseY, bmBtnX, bmBtnY, 90, 16);
             
-            // Red themed button (covers vanilla button)
             graphics.fill(bmBtnX, bmBtnY, bmBtnX + 90, bmBtnY + 16, 
                 bmHovered ? 0xCC660000 : 0xCC440000);
             drawBorder(graphics, bmBtnX, bmBtnY, 90, 16, 0xFFAA0000);
@@ -238,9 +567,6 @@ public class ShopScreen extends BaseRpgScreen {
         }
     }
     
-    /**
-     * Draw a styled button covering the vanilla button
-     */
     private void drawStyledButton(GuiGraphics graphics, int x, int y, int w, int h, String label, boolean hovered) {
         int bgColor = hovered ? COLOR_BUTTON_HOVER : COLOR_BUTTON_BG;
         graphics.fill(x, y, x + w, y + h, bgColor);
@@ -264,8 +590,11 @@ public class ShopScreen extends BaseRpgScreen {
             int levelCost = getBlackMarketCost(hoveredItem);
             lines.add("§5Cost: §d" + levelCost + " XP Levels");
         } else if (priceData != null) {
-            lines.add("§aBuy: §6$" + formatMoney(priceData.buyPrice()));
-            lines.add("§cSell: §6$" + formatMoney(priceData.sellPrice()));
+            lines.add("§aLeft-Click Buy: §6$" + formatMoney(priceData.buyPrice()));
+            lines.add("§cRight-Click Sell: §6$" + formatMoney(priceData.sellPrice()));
+            if (isShiftDown()) {
+                lines.add("§7(Shift: Buy/Sell x64)");
+            }
         }
         
         // Calculate tooltip dimensions
@@ -322,16 +651,21 @@ public class ShopScreen extends BaseRpgScreen {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
         
-        // 1.21.11: Use registry to get item path
         String itemId = BuiltInRegistries.ITEM.getKey(item).getPath();
         
         if (isBlackMarket) {
-            // Send black market buy command
             mc.player.connection.sendCommand("rpgadmin blackmarket " + itemId + " " + amount);
         } else {
-            // Send regular buy command
             mc.player.connection.sendCommand("buy " + itemId + " " + amount);
         }
+    }
+    
+    private void sendSellCommand(Item item, int amount) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
+        
+        String itemId = BuiltInRegistries.ITEM.getKey(item).getPath();
+        mc.player.connection.sendCommand("sell " + itemId + " " + amount);
     }
     
     @Override
@@ -355,12 +689,12 @@ public class ShopScreen extends BaseRpgScreen {
         String title = isBlackMarket ? "✦ Black Market ✦" : "✦ Shop ✦";
         int titleColor = isBlackMarket ? 0xFFAA00AA : COLOR_GOLD_TEXT;
         int textWidth = font.width(title);
-        graphics.drawString(font, title, windowX + windowWidth / 2 - textWidth / 2, windowY + 10, titleColor, true);
+        graphics.drawString(font, title, windowX + windowWidth / 2 - textWidth / 2, windowY + 4, titleColor, true);
         
-        // Render the vanilla widgets (buttons) - they will render gray
+        // Render vanilla widgets
         super.render(graphics, mouseX, mouseY, delta);
         
-        // Now render our content ON TOP - this covers the gray buttons
+        // Render our content on top
         renderContent(graphics, mouseX, mouseY, delta);
     }
 }

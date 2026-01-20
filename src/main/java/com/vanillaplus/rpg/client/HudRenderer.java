@@ -32,6 +32,7 @@ public class HudRenderer {
     private static int cachedXp = 0;
     private static int cachedXpRequired = 100;
     private static String cachedHotItem = "None";
+    private static int cachedSkillPoints = 0;
     
     /**
      * Register the HUD renderer
@@ -130,12 +131,13 @@ public class HudRenderer {
      * Update cached values from server
      * Called when receiving sync packets or from server-side
      */
-    public static void updateCachedValues(long money, int level, int xp, int xpRequired, String hotItem) {
+    public static void updateCachedValues(long money, int level, int xp, int xpRequired, String hotItem, int skillPoints) {
         cachedMoney = money;
         cachedLevel = level;
         cachedXp = xp;
         cachedXpRequired = xpRequired;
         cachedHotItem = hotItem;
+        cachedSkillPoints = skillPoints;
     }
     
     /**
@@ -201,5 +203,19 @@ public class HudRenderer {
     public static int getXpProgressPercent() {
         if (cachedXpRequired <= 0) return 0;
         return Math.min(100, (int) ((float) cachedXp / cachedXpRequired * 100));
+    }
+    
+    /**
+     * Get cached skill points
+     */
+    public static int getCachedSkillPoints() {
+        return cachedSkillPoints;
+    }
+    
+    /**
+     * Set cached skill points
+     */
+    public static void setCachedSkillPoints(int skillPoints) {
+        cachedSkillPoints = skillPoints;
     }
 }

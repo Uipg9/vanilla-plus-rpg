@@ -51,23 +51,23 @@ public class ShippingBinScreen extends BaseRpgScreen {
     protected void init() {
         super.init();
         
-        // Calculate window size
-        windowWidth = Math.min(300, width - 20);
-        windowHeight = Math.min(250, height - 20);
+        // Calculate window size - larger for better spacing
+        windowWidth = Math.min(320, width - 20);
+        windowHeight = Math.min(280, height - 20);
         windowX = (width - windowWidth) / 2;
         windowY = (height - windowHeight) / 2;
         
         // Calculate grid position for 9-slot hotbar display
         int gridWidth = 9 * (SLOT_SIZE + SLOT_SPACING) - SLOT_SPACING;
         gridStartX = windowX + (windowWidth - gridWidth) / 2;
-        gridStartY = windowY + 85;
+        gridStartY = windowY + 100;
         
         // Button positions
         sellHandBtnX = windowX + (windowWidth - 120) / 2;
-        sellHandBtnY = windowY + 55;
+        sellHandBtnY = windowY + 65;
         
         sellAllBtnX = windowX + (windowWidth - 140) / 2;
-        sellAllBtnY = windowY + windowHeight - 50;
+        sellAllBtnY = windowY + windowHeight - 55;
         
         // Add back button
         addRenderableWidget(Button.builder(Component.empty(), btn -> {
@@ -116,7 +116,7 @@ public class ShippingBinScreen extends BaseRpgScreen {
         drawStyledButton(graphics, backBtnX, backBtnY, 50, 16, "< Back", backHovered);
         
         // Draw held item section
-        drawCenteredText(graphics, "§7Held Item:", windowX + windowWidth / 2, windowY + 35, COLOR_GRAY_TEXT);
+        drawCenteredText(graphics, "§7Held Item:", windowX + windowWidth / 2, windowY + 45, COLOR_GRAY_TEXT);
         
         // Draw "Sell Item in Hand" button
         boolean sellHandHovered = isMouseOver(mouseX, mouseY, sellHandBtnX, sellHandBtnY, 120, 20);

@@ -32,6 +32,37 @@ public class PlayerDataManager {
     private static final String KEY_DAILY_EARNINGS = "dailyEarnings";
     private static final String KEY_LAST_LOGIN = "lastLogin";
     
+    // Skill keys
+    private static final String KEY_SKILL_POINTS = "skillPoints";
+    private static final String KEY_SKILL_FARMING = "skillFarming";
+    private static final String KEY_SKILL_COMBAT = "skillCombat";
+    private static final String KEY_SKILL_DEFENSE = "skillDefense";
+    private static final String KEY_SKILL_SMITHING = "skillSmithing";
+    private static final String KEY_SKILL_WOODCUTTING = "skillWoodcutting";
+    private static final String KEY_SKILL_MINING = "skillMining";
+    
+    // Skill enum for easy access
+    public enum Skill {
+        FARMING(KEY_SKILL_FARMING, "Farming", "Chance for double crop yield", 0xFF44AA44),
+        COMBAT(KEY_SKILL_COMBAT, "Combat", "Chance for critical hit", 0xFFFF5555),
+        DEFENSE(KEY_SKILL_DEFENSE, "Defense", "Extra hearts/health", 0xFF5555FF),
+        SMITHING(KEY_SKILL_SMITHING, "Smithing", "Faster smelting, double output", 0xFFAA6644),
+        WOODCUTTING(KEY_SKILL_WOODCUTTING, "Woodcutting", "Extra wood drops, faster chop", 0xFF44AA44),
+        MINING(KEY_SKILL_MINING, "Mining", "Extra ore drops, faster mine", 0xFFAAFFFF);
+        
+        public final String key;
+        public final String displayName;
+        public final String description;
+        public final int color;
+        
+        Skill(String key, String displayName, String description, int color) {
+            this.key = key;
+            this.displayName = displayName;
+            this.description = description;
+            this.color = color;
+        }
+    }
+    
     /**
      * Get the data directory path for a player
      * 1.21.11: Access server through level().getServer()
@@ -263,5 +294,106 @@ public class PlayerDataManager {
             return String.format("%.1fK", amount / 1_000.0);
         }
         return String.valueOf(amount);
+    }
+    
+    // ========== SKILL SYSTEM ==========
+    
+    /**
+     * Get available skill points
+     */
+    public static int getSkillPoints(ServerPlayer player) {
+        CompoundTag data = getModData(player);
+        return data.getIntOr(KEY_SKILL_POINTS, 0);
+    }
+    
+    /**
+     * Set available skill points
+     */
+    public static void setSkillPoints(ServerPlayer player, int points) {
+        CompoundTag data = getModData(player);
+        data.putInt(KEY_SKILL_POINTS, Math.max(0, points));
+        saveModData(player, data);
+    }
+    
+    /**
+     * Add skill points (called on level up)
+     */
+    public static void addSkillPoints(ServerPlayer player, int amount) {
+        setSkillPoints(player, getSkillPoints(player) + amount);
+    }
+    
+    /**
+     * Get a specific skill level
+     */
+    public static int getSkillLevel(ServerPlayer player, Skill skill) {
+        CompoundTag data = getModData(player);
+        return data.getIntOr(skill.key, 0);
+    }
+    
+    /**
+     * Set a specific skill level
+     */
+    public static void setSkillLevel(ServerPlayer player, Skill skill, int level) {
+        CompoundTag data = getModData(player);
+        data.putInt(skill.key, Math.max(0, Math.min(10, level))); // Max level 10
+        saveModData(player, data);
+    }
+    
+    /**
+     * Upgrade a skill by spending a skill point
+     * Returns true if successful
+     */
+    public static boolean upgradeSkill(ServerPlayer player, Skill skill) {
+        int currentPoints = getSkillPoints(player);
+        int currentLevel = getSkillLevel(player, skill);
+        
+        // Check if can upgrade
+        if (currentPoints <= 0) return false;
+        if (currentLevel >= 10) return false; // Max level 10
+        
+        // Upgrade
+        setSkillPoints(player, currentPoints - 1);
+        setSkillLevel(player, skill, currentLevel + 1);
+        return true;
+    }
+    
+    /**
+     * Get the bonus percentage for a skill
+     * Each level gives +5% bonus (so level 10 = 50%)
+     */
+    public static int getSkillBonusPercent(ServerPlayer player, Skill skill) {
+        return getSkillLevel(player, skill) * 5;
+    }
+    
+    /**
+     * Check if a bonus should trigger based on skill level
+     * Uses random roll against skill bonus percent
+     */
+    public static boolean rollSkillBonus(ServerPlayer player, Skill skill) {
+        int bonusPercent = getSkillBonusPercent(player, skill);
+        if (bonusPercent <= 0) return false;
+        return Math.random() * 100 < bonusPercent;
+    }
+    
+    /**
+     * Get total skill points invested across all skills
+     */
+    public static int getTotalSkillsInvested(ServerPlayer player) {
+        int total = 0;
+        for (Skill skill : Skill.values()) {
+            total += getSkillLevel(player, skill);
+        }
+        return total;
+    }
+    
+    /**
+     * Get all skill levels as a map
+     */
+    public static Map<Skill, Integer> getAllSkillLevels(ServerPlayer player) {
+        Map<Skill, Integer> skills = new HashMap<>();
+        for (Skill skill : Skill.values()) {
+            skills.put(skill, getSkillLevel(player, skill));
+        }
+        return skills;
     }
 }

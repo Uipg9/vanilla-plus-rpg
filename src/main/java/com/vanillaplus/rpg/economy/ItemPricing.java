@@ -227,6 +227,218 @@ public class ItemPricing {
         addItem(Items.HEART_OF_THE_SEA, 2000);
         addItem(Items.TOTEM_OF_UNDYING, 10000);
         addItem(Items.EXPERIENCE_BOTTLE, 100);
+        
+        // === ADDITIONAL TOOLS ===
+        addItem(Items.GOLDEN_AXE, 400);
+        addItem(Items.NETHERITE_AXE, 15000);
+        addItem(Items.GOLDEN_SHOVEL, 350);
+        addItem(Items.NETHERITE_SHOVEL, 12000);
+        addItem(Items.GOLDEN_HOE, 350);
+        addItem(Items.NETHERITE_HOE, 12000);
+        addItem(Items.SHEARS, 50);
+        addItem(Items.FLINT_AND_STEEL, 40);
+        addItem(Items.FISHING_ROD, 75);
+        addItem(Items.SPYGLASS, 300);
+        addItem(Items.BRUSH, 100);
+        
+        // === GOLDEN ARMOR ===
+        addItem(Items.GOLDEN_HELMET, 500);
+        addItem(Items.GOLDEN_CHESTPLATE, 800);
+        addItem(Items.GOLDEN_LEGGINGS, 700);
+        addItem(Items.GOLDEN_BOOTS, 400);
+        
+        // === CHAINMAIL ARMOR ===
+        addItem(Items.CHAINMAIL_HELMET, 200);
+        addItem(Items.CHAINMAIL_CHESTPLATE, 350);
+        addItem(Items.CHAINMAIL_LEGGINGS, 300);
+        addItem(Items.CHAINMAIL_BOOTS, 175);
+        
+        // === TURTLE ARMOR ===
+        addItem(Items.TURTLE_HELMET, 1500);
+        
+        // === MORE FOOD ===
+        addItem(Items.COOKED_RABBIT, 20);
+        addItem(Items.BAKED_POTATO, 12);
+        addItem(Items.PUMPKIN_PIE, 35);
+        addItem(Items.COOKIE, 8);
+        addItem(Items.CAKE, 100);
+        addItem(Items.SWEET_BERRIES, 10);
+        addItem(Items.GLOW_BERRIES, 20);
+        addItem(Items.MUSHROOM_STEW, 30);
+        addItem(Items.RABBIT_STEW, 50);
+        addItem(Items.SUSPICIOUS_STEW, 100);
+        addItem(Items.BEETROOT_SOUP, 25);
+        
+        // === MORE BUILDING BLOCKS ===
+        addItem(Items.SPRUCE_PLANKS, 2);
+        addItem(Items.BIRCH_PLANKS, 2);
+        addItem(Items.JUNGLE_PLANKS, 3);
+        addItem(Items.ACACIA_PLANKS, 3);
+        addItem(Items.DARK_OAK_PLANKS, 3);
+        addItem(Items.GLASS_PANE, 3);
+        addItem(Items.WHITE_WOOL, 15);
+        addItem(Items.WHITE_CONCRETE, 8);
+        addItem(Items.BRICKS, 40);
+        addItem(Items.DEEPSLATE_BRICKS, 10);
+        addItem(Items.SANDSTONE, 5);
+        addItem(Items.RED_SANDSTONE, 6);
+        addItem(Items.QUARTZ_BLOCK, 60);
+        addItem(Items.PRISMARINE, 50);
+        addItem(Items.SEA_LANTERN, 100);
+        addItem(Items.OAK_DOOR, 15);
+        addItem(Items.IRON_DOOR, 150);
+        addItem(Items.LADDER, 5);
+        addItem(Items.GRINDSTONE, 75);
+        addItem(Items.SMITHING_TABLE, 100);
+        addItem(Items.LECTERN, 150);
+        addItem(Items.RED_BED, 75);
+        addItem(Items.BAMBOO, 3);
+        addItem(Items.SUGAR_CANE, 5);
+        addItem(Items.CACTUS, 10);
+        addItem(Items.HAY_BLOCK, 50);
+        addItem(Items.COMPOSTER, 25);
+        
+        // === ORE BLOCKS ===
+        addItem(Items.IRON_BLOCK, 225);
+        addItem(Items.GOLD_BLOCK, 900);
+        addItem(Items.DIAMOND_BLOCK, 4500);
+        addItem(Items.EMERALD_BLOCK, 2700);
+        addItem(Items.LAPIS_BLOCK, 180);
+        addItem(Items.REDSTONE_BLOCK, 90);
+        addItem(Items.COPPER_BLOCK, 135);
+        addItem(Items.NETHERITE_BLOCK, 45000);
+        addItem(Items.COAL_BLOCK, 45);
+        
+        // === POTIONS (base) ===
+        addItem(Items.GLASS_BOTTLE, 5);
+        addItem(Items.FERMENTED_SPIDER_EYE, 50);
+        addItem(Items.GLISTERING_MELON_SLICE, 100);
+        addItem(Items.RABBIT_FOOT, 150);
+        addItem(Items.PHANTOM_MEMBRANE, 200);
+        
+        // === MACE (new 1.21 weapon) ===
+        addItem(Items.MACE, 8000);
+        addItem(Items.WIND_CHARGE, 100);
+        
+        // === TIPPED ARROWS ===
+        addItem(Items.TIPPED_ARROW, 50);
+        
+        // === MORE TOOLS ===
+        addItem(Items.GOLDEN_AXE, 400);
+        addItem(Items.NETHERITE_AXE, 15000);
+        addItem(Items.GOLDEN_SHOVEL, 350);
+        addItem(Items.NETHERITE_SHOVEL, 12000);
+        addItem(Items.GOLDEN_HOE, 350);
+        addItem(Items.NETHERITE_HOE, 12000);
+        addItem(Items.BRUSH, 50);
+        addItem(Items.SPYGLASS, 200);
+        addItem(Items.CLOCK, 400);
+        addItem(Items.COMPASS, 150);
+        addItem(Items.LEAD, 50);
+        addItem(Items.NAME_TAG, 250);
+        addItem(Items.SADDLE, 300);
+        addItem(Items.CARROT_ON_A_STICK, 80);
+        addItem(Items.WARPED_FUNGUS_ON_A_STICK, 100);
+        
+        // === MORE MISC ===
+        addItem(Items.BOOK, 30);
+        addItem(Items.PAPER, 5);
+        addItem(Items.INK_SAC, 15);
+        addItem(Items.GLOW_INK_SAC, 50);
+        addItem(Items.BONE, 10);
+        addItem(Items.BONE_MEAL, 8);
+        addItem(Items.STRING, 10);
+        addItem(Items.SLIME_BALL, 50);
+        addItem(Items.HONEY_BOTTLE, 50);
+        addItem(Items.HONEYCOMB, 25);
+        addItem(Items.MILK_BUCKET, 50);
+        addItem(Items.WATER_BUCKET, 30);
+        addItem(Items.LAVA_BUCKET, 150);
+        addItem(Items.BUCKET, 75);
+        addItem(Items.GUNPOWDER, 25);
+        addItem(Items.BLAZE_ROD, 150);
+        addItem(Items.BLAZE_POWDER, 80);
+        addItem(Items.ENDER_PEARL, 200);
+        addItem(Items.ENDER_EYE, 500);
+        addItem(Items.GHAST_TEAR, 300);
+        addItem(Items.MAGMA_CREAM, 100);
+        addItem(Items.NETHER_STAR, 50000);
+        addItem(Items.DRAGON_BREATH, 1000);
+        addItem(Items.SHULKER_SHELL, 500);
+        addItem(Items.SHULKER_BOX, 1200);
+        addItem(Items.ELYTRA, 25000);
+        addItem(Items.TOTEM_OF_UNDYING, 15000);
+        addItem(Items.EXPERIENCE_BOTTLE, 100);
+        addItem(Items.FIREWORK_ROCKET, 30);
+        addItem(Items.FIREWORK_STAR, 50);
+        addItem(Items.NETHERITE_SCRAP, 1500);
+        
+        // === DECORATION ===
+        addItem(Items.PAINTING, 30);
+        addItem(Items.ITEM_FRAME, 20);
+        addItem(Items.GLOW_ITEM_FRAME, 70);
+        addItem(Items.ARMOR_STAND, 40);
+        addItem(Items.FLOWER_POT, 15);
+        addItem(Items.CANDLE, 20);
+        addItem(Items.BELL, 500);
+        addItem(Items.IRON_BARS, 25);
+        addItem(Items.LIGHTNING_ROD, 150);
+        
+        // === REDSTONE ===
+        addItem(Items.LEVER, 5);
+        addItem(Items.REDSTONE_TORCH, 15);
+        addItem(Items.REPEATER, 50);
+        addItem(Items.COMPARATOR, 75);
+        addItem(Items.PISTON, 100);
+        addItem(Items.STICKY_PISTON, 150);
+        addItem(Items.OBSERVER, 100);
+        addItem(Items.HOPPER, 250);
+        addItem(Items.DROPPER, 80);
+        addItem(Items.DISPENSER, 100);
+        addItem(Items.NOTE_BLOCK, 50);
+        addItem(Items.TRIPWIRE_HOOK, 30);
+        addItem(Items.TARGET, 80);
+        addItem(Items.DAYLIGHT_DETECTOR, 100);
+        
+        // === RAIL ITEMS ===
+        addItem(Items.RAIL, 15);
+        addItem(Items.POWERED_RAIL, 100);
+        addItem(Items.DETECTOR_RAIL, 75);
+        addItem(Items.ACTIVATOR_RAIL, 75);
+        addItem(Items.MINECART, 100);
+        addItem(Items.CHEST_MINECART, 150);
+        addItem(Items.HOPPER_MINECART, 350);
+        addItem(Items.TNT_MINECART, 200);
+        addItem(Items.FURNACE_MINECART, 150);
+        
+        // === BOATS ===
+        addItem(Items.OAK_BOAT, 30);
+        addItem(Items.OAK_CHEST_BOAT, 80);
+        addItem(Items.SPRUCE_BOAT, 30);
+        addItem(Items.BIRCH_BOAT, 30);
+        
+        // === SEEDS & FARMING ===
+        addItem(Items.WHEAT_SEEDS, 3);
+        addItem(Items.BEETROOT_SEEDS, 5);
+        addItem(Items.MELON_SEEDS, 8);
+        addItem(Items.PUMPKIN_SEEDS, 8);
+        addItem(Items.TORCHFLOWER_SEEDS, 50);
+        addItem(Items.PITCHER_POD, 50);
+        addItem(Items.EGG, 10);
+        addItem(Items.FEATHER, 5);
+        addItem(Items.LEATHER, 20);
+        addItem(Items.RABBIT_HIDE, 15);
+        addItem(Items.WHITE_WOOL, 15);
+        
+        // === SPAWN EGGS (expensive!) ===
+        addItem(Items.CHICKEN_SPAWN_EGG, 500);
+        addItem(Items.COW_SPAWN_EGG, 500);
+        addItem(Items.PIG_SPAWN_EGG, 500);
+        addItem(Items.SHEEP_SPAWN_EGG, 500);
+        addItem(Items.WOLF_SPAWN_EGG, 1000);
+        addItem(Items.CAT_SPAWN_EGG, 800);
+        addItem(Items.HORSE_SPAWN_EGG, 1500);
+        addItem(Items.VILLAGER_SPAWN_EGG, 5000);
     }
     
     /**

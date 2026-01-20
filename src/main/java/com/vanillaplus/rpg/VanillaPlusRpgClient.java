@@ -2,6 +2,7 @@ package com.vanillaplus.rpg;
 
 import com.vanillaplus.rpg.client.HudRenderer;
 import com.vanillaplus.rpg.client.KeyBindings;
+import com.vanillaplus.rpg.client.RewardOverlay;
 import com.vanillaplus.rpg.network.PlayerDataSyncHandler;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
  * - Keybindings (H to open Hub)
  * - Network receivers for data sync
  * - Custom GUI screens (via DrawContext API)
+ * - Reward overlay for XP/money notifications
  */
 @Environment(EnvType.CLIENT)
 public class VanillaPlusRpgClient implements ClientModInitializer {
@@ -31,6 +33,9 @@ public class VanillaPlusRpgClient implements ClientModInitializer {
         
         // Register HUD renderer
         HudRenderer.register();
+        
+        // Register reward notification overlay
+        RewardOverlay.register();
         
         // Register network handlers (client-side)
         PlayerDataSyncHandler.registerClient();

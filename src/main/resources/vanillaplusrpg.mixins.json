@@ -4,6 +4,7 @@
   "package": "com.vanillaplus.rpg.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "FurnaceResultSlotMixin"
   ],
   "client": [
   ],

@@ -22,17 +22,28 @@ A clean, code-only Minecraft Fabric mod for **1.21.11** that adds an RPG progres
 - Shipping Bin for quick selling directly from hotbar
 
 ### ⚔️ RPG Progression
+- **6 Skills**: Farming, Combat, Defense, Smithing, Woodcutting, Mining
+- Max level 10 per skill (+5% bonus per level)
 - Gain XP by mining ores, breaking blocks, killing mobs
-- **NEW**: Earn XP & money from trees, crops, dirt, sand, gravel
+- **NEW**: Earn Smithing XP & money from smelting in furnaces!
+- **NEW**: Earn rewards from trees, crops, dirt, sand, gravel
 - **NEW**: Get rewards for traveling/running
 - Level up system with money rewards
 - Action bar HUD showing level, money, and XP progress
 
 ### 🛒 Shop System
 - Catalog-style shop (not inventory slots!)
-- 100+ items with balanced pricing
+- **100+ items** organized into categories:
+  - All, Tools, Weapons, Armor, Food, Building, Farming, Ores, Misc
+- Items sorted logically (pickaxes together, axes together, etc.)
 - Hidden "Black Market" for rare items (hold Shift!)
 - Market rotates daily with bonus prices
+
+### 🔥 Smithing System
+- Smelting items in furnaces gives Smithing XP and money!
+- Higher Smithing level = more rewards (+5% per level)
+- Works with all furnace types (furnace, blast furnace, smoker)
+- Rewards for smelting: Iron, Gold, Copper, Netherite, Glass, Bricks, etc.
 
 ## Screenshots
 
@@ -103,6 +114,20 @@ A clean, code-only Minecraft Fabric mod for **1.21.11** that adds an RPG progres
 - Travel 100 blocks = 2 XP + $1
 - Sprint 100 blocks = 5 XP + $3
 - (Max once per 30 seconds)
+
+### Smelting Rewards (Smithing Skill)
+| Smelted Item | XP | Money |
+|--------------|-----|-------|
+| Iron Ingot | 3 | $2 |
+| Gold Ingot | 5 | $5 |
+| Copper Ingot | 2 | $1 |
+| Netherite Scrap | 15 | $50 |
+| Glass | 1 | $1 |
+| Smooth Stone | 1 | $1 |
+| Charcoal | 1 | $1 |
+| Brick | 1 | $1 |
+
+*Higher Smithing level = +5% bonus per level!*
 
 ### Level Formula
 - XP needed = Level * 100

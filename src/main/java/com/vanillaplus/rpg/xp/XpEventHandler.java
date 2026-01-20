@@ -2,6 +2,7 @@ package com.vanillaplus.rpg.xp;
 
 import com.vanillaplus.rpg.VanillaPlusRpg;
 import com.vanillaplus.rpg.data.PlayerDataManager;
+import com.vanillaplus.rpg.network.PlayerDataSyncHandler;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -186,6 +187,21 @@ public class XpEventHandler {
         MINING_MONEY.put(Blocks.MELON, 3L);
         MINING_MONEY.put(Blocks.PUMPKIN, 3L);
         MINING_MONEY.put(Blocks.SUGAR_CANE, 1L);
+        MINING_MONEY.put(Blocks.BAMBOO, 1L);
+        MINING_MONEY.put(Blocks.CACTUS, 1L);
+        MINING_MONEY.put(Blocks.COCOA, 2L);
+        MINING_MONEY.put(Blocks.NETHER_WART, 2L);
+        MINING_MONEY.put(Blocks.SWEET_BERRY_BUSH, 1L);
+        
+        // Common blocks give small money
+        MINING_MONEY.put(Blocks.STONE, 1L);
+        MINING_MONEY.put(Blocks.COBBLESTONE, 1L);
+        MINING_MONEY.put(Blocks.DEEPSLATE, 1L);
+        MINING_MONEY.put(Blocks.OBSIDIAN, 5L);
+        MINING_MONEY.put(Blocks.CRYING_OBSIDIAN, 8L);
+        MINING_MONEY.put(Blocks.GLOWSTONE, 3L);
+        MINING_MONEY.put(Blocks.AMETHYST_CLUSTER, 5L);
+        MINING_MONEY.put(Blocks.END_STONE, 2L);
         
         // ========== MOB XP MULTIPLIERS ==========
         // Monsters give 1.5x base XP
@@ -226,23 +242,58 @@ public class XpEventHandler {
             // Calculate money
             long money = getBlockMoney(block, state);
             
+            // ========== SKILL BONUSES ==========
+            boolean skillBonusTriggered = false;
+            String skillBonusMessage = null;
+            
+            // Check Farming skill for crops
+            if (block instanceof CropBlock && xp > 0) {
+                if (PlayerDataManager.rollSkillBonus(serverPlayer, PlayerDataManager.Skill.FARMING)) {
+                    xp *= 2;
+                    money *= 2;
+                    skillBonusTriggered = true;
+                    skillBonusMessage = "§a✿ Double Harvest! (Farming Skill)";
+                }
+            }
+            
+            // Check Mining skill for ores
+            else if (isOre(block)) {
+                if (PlayerDataManager.rollSkillBonus(serverPlayer, PlayerDataManager.Skill.MINING)) {
+                    xp *= 2;
+                    money *= 2;
+                    skillBonusTriggered = true;
+                    skillBonusMessage = "§b⛏ Ore Vein! (Mining Skill)";
+                }
+            }
+            
+            // Check Woodcutting skill for logs
+            else if (state.is(BlockTags.LOGS)) {
+                if (PlayerDataManager.rollSkillBonus(serverPlayer, PlayerDataManager.Skill.WOODCUTTING)) {
+                    xp *= 2;
+                    money *= 2;
+                    skillBonusTriggered = true;
+                    skillBonusMessage = "§2🪓 Extra Wood! (Woodcutting Skill)";
+                }
+            }
+            
             // Award XP
             if (xp > 0) {
                 int oldLevel = PlayerDataManager.getRpgLevel(serverPlayer);
                 PlayerDataManager.addRpgXp(serverPlayer, xp);
                 int newLevel = PlayerDataManager.getRpgLevel(serverPlayer);
                 
+                // Give vanilla XP too (scaled down - about 1/5 of mod XP)
+                int vanillaXp = Math.max(1, xp / 5);
+                serverPlayer.giveExperiencePoints(vanillaXp);
+                
                 // Check for level up
                 if (newLevel > oldLevel) {
                     onLevelUp(serverPlayer, newLevel);
                 }
                 
-                // Show XP gain in action bar (only for significant XP)
+                // Show reward notification (only for significant XP >= 3)
                 if (xp >= 3) {
-                    serverPlayer.displayClientMessage(
-                        Component.literal("§b+" + xp + " XP" + (money > 0 ? " §a+$" + money : "")), 
-                        true
-                    );
+                    PlayerDataSyncHandler.sendRewardNotification(serverPlayer, xp, money, vanillaXp);
                 }
             }
             
@@ -250,7 +301,28 @@ public class XpEventHandler {
             if (money > 0) {
                 PlayerDataManager.addMoney(serverPlayer, money);
             }
+            
+            // Show skill bonus message in action bar
+            if (skillBonusTriggered && skillBonusMessage != null) {
+                serverPlayer.displayClientMessage(Component.literal(skillBonusMessage), true);
+            }
         });
+    }
+    
+    /**
+     * Check if a block is an ore
+     */
+    private static boolean isOre(Block block) {
+        return block == Blocks.COAL_ORE || block == Blocks.DEEPSLATE_COAL_ORE ||
+               block == Blocks.IRON_ORE || block == Blocks.DEEPSLATE_IRON_ORE ||
+               block == Blocks.COPPER_ORE || block == Blocks.DEEPSLATE_COPPER_ORE ||
+               block == Blocks.GOLD_ORE || block == Blocks.DEEPSLATE_GOLD_ORE ||
+               block == Blocks.REDSTONE_ORE || block == Blocks.DEEPSLATE_REDSTONE_ORE ||
+               block == Blocks.LAPIS_ORE || block == Blocks.DEEPSLATE_LAPIS_ORE ||
+               block == Blocks.DIAMOND_ORE || block == Blocks.DEEPSLATE_DIAMOND_ORE ||
+               block == Blocks.EMERALD_ORE || block == Blocks.DEEPSLATE_EMERALD_ORE ||
+               block == Blocks.NETHER_QUARTZ_ORE || block == Blocks.NETHER_GOLD_ORE ||
+               block == Blocks.ANCIENT_DEBRIS;
     }
     
     /**
@@ -326,10 +398,24 @@ public class XpEventHandler {
             // Calculate money
             long money = calculateCombatMoney(entity);
             
+            // ========== COMBAT SKILL BONUS ==========
+            boolean critTriggered = false;
+            if (PlayerDataManager.rollSkillBonus(serverPlayer, PlayerDataManager.Skill.COMBAT)) {
+                xp *= 2;
+                money *= 2;
+                critTriggered = true;
+                serverPlayer.displayClientMessage(
+                    Component.literal("§c⚔ Critical Strike! §7(Combat Skill)"), true);
+            }
+            
             // Award XP
             int oldLevel = PlayerDataManager.getRpgLevel(serverPlayer);
             PlayerDataManager.addRpgXp(serverPlayer, xp);
             int newLevel = PlayerDataManager.getRpgLevel(serverPlayer);
+            
+            // Give vanilla XP too (scaled - about 1/3 of mod XP)
+            int vanillaXp = Math.max(1, xp / 3);
+            serverPlayer.giveExperiencePoints(vanillaXp);
             
             // Award money
             if (money > 0) {
@@ -341,12 +427,9 @@ public class XpEventHandler {
                 onLevelUp(serverPlayer, newLevel);
             }
             
-            // Show XP gain
-            String symbol = entity instanceof Monster ? "⚔" : "🥩";
-            serverPlayer.displayClientMessage(
-                Component.literal("§c" + symbol + " §b+" + xp + " XP" + (money > 0 ? " §a+$" + money : "")), 
-                true
-            );
+            // Show reward notification via overlay (longer lasting!)
+            boolean isMonster = entity instanceof Monster;
+            PlayerDataSyncHandler.sendCombatRewardNotification(serverPlayer, xp, money, vanillaXp, isMonster);
         });
     }
     
@@ -452,6 +535,9 @@ public class XpEventHandler {
             PlayerDataManager.addRpgXp(player, xp);
             PlayerDataManager.addMoney(player, money);
             
+            // Also give small vanilla XP for movement
+            player.giveExperiencePoints(1);
+            
             // Silent reward - no message spam for movement
         }
     }
@@ -460,7 +546,7 @@ public class XpEventHandler {
      * Handle level up event
      */
     private static void onLevelUp(ServerPlayer player, int newLevel) {
-        // Send level up message
+        // Send level up message to chat
         player.sendSystemMessage(Component.literal(
             "§6§l⬆ LEVEL UP! §r§eYou are now level §f" + newLevel + "§e!"
         ));
@@ -478,9 +564,15 @@ public class XpEventHandler {
         // Give level up reward (bonus money)
         long reward = newLevel * 50L;
         PlayerDataManager.addMoney(player, reward);
+        
+        // Give skill point on level up!
+        PlayerDataManager.addSkillPoints(player, 1);
         player.sendSystemMessage(Component.literal(
-            "§a+$" + String.format("%,d", reward) + " §7(Level up bonus!)"
+            "§d+1 Skill Point §7(Press H to invest!)"
         ));
+        
+        // Send level up notification to overlay
+        PlayerDataSyncHandler.sendLevelUpNotification(player, newLevel, reward);
     }
     
     /**
