@@ -38,7 +38,8 @@ Using this with any other version (1.20.x, 1.21.0, 1.21.4, etc.) will cause comp
 | **[11_GUI_DESIGN_GUIDE.md](11_GUI_DESIGN_GUIDE.md)** | Complete GUI design philosophy & examples | Building beautiful, functional GUIs |
 | **[12_API_CHANGES_1.21.11.md](12_API_CHANGES_1.21.11.md)** | Critical API changes from earlier versions | Migrating or troubleshooting |
 | **[13_TESTING_CHECKLIST.md](13_TESTING_CHECKLIST.md)** | Testing checklist for mods | Pre-release verification |
-| **[14_CUSTOM_GUI_SCREENS.md](14_CUSTOM_GUI_SCREENS.md)** | **Custom DrawContext GUI (no SGUI)** | Modern procedural GUIs |
+| **[14_SMELTING_REWARDS.md](14_SMELTING_REWARDS.md)** | **Mixin system for furnace rewards** | Hooking into furnace mechanics |
+| **[15_SHOP_LAYOUT_SORTING.md](15_SHOP_LAYOUT_SORTING.md)** | **Shop GUI layout & item sorting** | Creating organized shop interfaces |
 
 ---
 
