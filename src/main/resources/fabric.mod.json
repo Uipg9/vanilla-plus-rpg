@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "vanillaplusrpg",
+  "version": "${version}",
+  "name": "Vanilla+ RPG & Shop",
+  "description": "A clean, code-only aesthetic mod with unified economy and progression loop",
+  "authors": ["YourName"],
+  "contact": {
+    "homepage": "https://github.com/yourname/vanillaplus-rpg",
+    "sources": "https://github.com/yourname/vanillaplus-rpg"
+  },
+  "license": "MIT",
+  "icon": "assets/vanillaplusrpg/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.vanillaplus.rpg.VanillaPlusRpg"
+    ],
+    "client": [
+      "com.vanillaplus.rpg.VanillaPlusRpgClient"
+    ]
+  },
+  "mixins": [
+    "vanillaplusrpg.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.0",
+    "minecraft": "1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

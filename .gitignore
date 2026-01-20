@@ -1,0 +1,36 @@
+# Gradle
+.gradle/
+build/
+out/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.code-workspace
+
+# Fabric/Loom
+run/
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Java
+*.class
+*.jar
+!gradle-wrapper.jar
+
+# Project specific
+MC_REF_1.21.11/
+*.bak
+
+# Temporary files
+*.tmp
+*.temp
+*~

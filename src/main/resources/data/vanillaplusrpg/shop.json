@@ -1,0 +1,18 @@
+{
+  "minecraft:diamond": { "buy": 500, "sell": 100 },
+  "minecraft:emerald": { "buy": 200, "sell": 40 },
+  "minecraft:gold_ingot": { "buy": 50, "sell": 10 },
+  "minecraft:iron_ingot": { "buy": 25, "sell": 5 },
+  "minecraft:coal": { "buy": 10, "sell": 2 },
+  "minecraft:cobblestone": { "buy": 5, "sell": 1 },
+  "minecraft:oak_log": { "buy": 8, "sell": 2 },
+  "minecraft:wheat": { "buy": 5, "sell": 1 },
+  "minecraft:bread": { "buy": 15, "sell": 3 },
+  "minecraft:cooked_beef": { "buy": 20, "sell": 4 },
+  "minecraft:golden_apple": { "buy": 1000, "sell": 200 },
+  "minecraft:enchanted_golden_apple": { "buy": 10000, "sell": 2000 },
+  "minecraft:netherite_ingot": { "buy": 5000, "sell": 1000 },
+  "minecraft:spawner": { "buy": -1, "sell": 0, "blackMarketCost": 50 },
+  "minecraft:bedrock": { "buy": -1, "sell": 0, "blackMarketCost": 100 },
+  "minecraft:command_block": { "buy": -1, "sell": 0, "blackMarketCost": 200 }
+}
