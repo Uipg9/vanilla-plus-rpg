@@ -29,7 +29,7 @@ public class ShopScreen extends BaseRpgScreen {
     
     // Layout constants
     private static final int GRID_COLS = 6;
-    private static final int GRID_ROWS = 4;
+    private static final int VISIBLE_ROWS = 6; // Show 6 rows at a time (more than before)
     private static final int ITEM_SIZE = 24;
     private static final int ITEM_SPACING = 4;
     
@@ -55,7 +55,7 @@ public class ShopScreen extends BaseRpgScreen {
     }
     
     private final boolean isBlackMarket;
-    private int currentPage = 0;
+    private int scrollOffset = 0; // Scroll offset in rows
     private ShopCategory currentCategory = ShopCategory.ALL;
     private List<Item> shopItems;
     private List<Item> filteredItems;
@@ -70,8 +70,6 @@ public class ShopScreen extends BaseRpgScreen {
     
     // Button references
     private Button backButton;
-    private Button prevButton;
-    private Button nextButton;
     private List<Button> itemButtons = new ArrayList<>();
     private List<Button> categoryButtons = new ArrayList<>();
     
@@ -202,7 +200,7 @@ public class ShopScreen extends BaseRpgScreen {
         }
         // Sort items within the filter
         sortItemsLogically();
-        currentPage = 0;
+        scrollOffset = 0; // Reset scroll when changing category
     }
     
     /**
@@ -333,16 +331,16 @@ public class ShopScreen extends BaseRpgScreen {
     protected void init() {
         super.init();
         
-        // Wider window for shop with categories
-        windowWidth = Math.min(420, width - 20);
-        windowHeight = Math.min(360, height - 20);
+        // Wider and taller window for scrollable shop
+        windowWidth = Math.min(450, width - 20);
+        windowHeight = Math.min(420, height - 20);
         windowX = (width - windowWidth) / 2;
         windowY = (height - windowHeight) / 2;
         
         // Calculate grid position (shifted down for category tabs and balance)
         int gridWidth = GRID_COLS * (ITEM_SIZE + ITEM_SPACING) - ITEM_SPACING;
         gridStartX = windowX + (windowWidth - gridWidth) / 2;
-        gridStartY = windowY + 100; // More space for categories and balance
+        gridStartY = windowY + 90; // Space for categories and balance
         
         // Add buttons
         addButtons();
@@ -358,11 +356,11 @@ public class ShopScreen extends BaseRpgScreen {
         backButton = addRenderableWidget(Button.builder(Component.empty(), btn -> {
             playClickSound();
             Minecraft.getInstance().setScreen(new HubScreen());
-        }).bounds(windowX + 8, windowY + 24, 50, 16).build());
+        }).bounds(windowX + 8, windowY + 42, 50, 16).build());
         
         // Category tabs (only for non-black market)
         if (!isBlackMarket) {
-            int tabY = windowY + 44;
+            int tabY = windowY + 64;
             int tabWidth = 38;
             int tabSpacing = 2;
             int totalTabsWidth = ShopCategory.values().length * (tabWidth + tabSpacing) - tabSpacing;
@@ -381,31 +379,34 @@ public class ShopScreen extends BaseRpgScreen {
             }
         }
         
-        // Previous page button - positioned below categories, to the left
-        int totalPages = (int) Math.ceil((double) filteredItems.size() / (GRID_COLS * GRID_ROWS));
-        int pageNavY = windowY + 64; // Below categories (which end at ~58)
-        if (currentPage > 0) {
-            prevButton = addRenderableWidget(Button.builder(Component.empty(), btn -> {
-                playClickSound();
-                currentPage--;
-                refreshScreen();
-            }).bounds(windowX + 10, pageNavY, 24, 14).build());
-        }
+        // Scroll buttons on the right side
+        int scrollX = windowX + windowWidth - 30;
+        int scrollUpY = gridStartY;
+        int scrollDownY = gridStartY + (VISIBLE_ROWS * (ITEM_SIZE + ITEM_SPACING)) - 20;
         
-        // Next page button
-        if (currentPage < totalPages - 1) {
-            nextButton = addRenderableWidget(Button.builder(Component.empty(), btn -> {
-                playClickSound();
-                currentPage++;
+        // Scroll up button
+        addRenderableWidget(Button.builder(Component.empty(), btn -> {
+            playClickSound();
+            if (scrollOffset > 0) {
+                scrollOffset--;
                 refreshScreen();
-            }).bounds(windowX + windowWidth - 34, pageNavY, 24, 14).build());
-        }
+            }
+        }).bounds(scrollX, scrollUpY, 20, 16).build());
+        
+        // Scroll down button
+        addRenderableWidget(Button.builder(Component.empty(), btn -> {
+            playClickSound();
+            int maxRows = (int) Math.ceil((double) filteredItems.size() / GRID_COLS);
+            if (scrollOffset < maxRows - VISIBLE_ROWS) {
+                scrollOffset++;
+                refreshScreen();
+            }
+        }).bounds(scrollX, scrollDownY, 20, 16).build());
         
         // Item grid buttons
-        int startIndex = currentPage * GRID_COLS * GRID_ROWS;
-        for (int row = 0; row < GRID_ROWS; row++) {
+        for (int row = 0; row < VISIBLE_ROWS; row++) {
             for (int col = 0; col < GRID_COLS; col++) {
-                int index = startIndex + row * GRID_COLS + col;
+                int index = (scrollOffset + row) * GRID_COLS + col;
                 if (index >= filteredItems.size()) break;
                 
                 Item item = filteredItems.get(index);
@@ -444,18 +445,43 @@ public class ShopScreen extends BaseRpgScreen {
     }
     
     @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        // Scroll the shop list
+        int maxRows = (int) Math.ceil((double) filteredItems.size() / GRID_COLS);
+        int maxScroll = Math.max(0, maxRows - VISIBLE_ROWS);
+        
+        if (verticalAmount > 0) {
+            // Scroll up
+            if (scrollOffset > 0) {
+                scrollOffset--;
+                refreshScreen();
+                return true;
+            }
+        } else if (verticalAmount < 0) {
+            // Scroll down
+            if (scrollOffset < maxScroll) {
+                scrollOffset++;
+                refreshScreen();
+                return true;
+            }
+        }
+        
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+    
+    @Override
     protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         hoveredItem = null;
         hoveredSlot = -1;
         
-        // Draw balance at top
+        // Draw balance at top (moved down to avoid title overlap)
         long balance = HudRenderer.getCachedMoney();
         String balanceText = "§6Balance: §e$" + formatMoney(balance);
-        drawCenteredText(graphics, balanceText, windowX + windowWidth / 2, windowY + 10, COLOR_GOLD_TEXT);
+        drawCenteredText(graphics, balanceText, windowX + windowWidth / 2, windowY + 28, COLOR_GOLD_TEXT);
         
         // Draw back button
         int backBtnX = windowX + 8;
-        int backBtnY = windowY + 24;
+        int backBtnY = windowY + 42;
         boolean backHovered = isMouseOver(mouseX, mouseY, backBtnX, backBtnY, 50, 16);
         drawStyledButton(graphics, backBtnX, backBtnY, 50, 16, "< Back", backHovered);
         
@@ -465,7 +491,7 @@ public class ShopScreen extends BaseRpgScreen {
             int tabSpacing = 2;
             int totalTabsWidth = ShopCategory.values().length * (tabWidth + tabSpacing) - tabSpacing;
             int tabX = windowX + (windowWidth - totalTabsWidth) / 2; // Center categories
-            int tabY = windowY + 44;
+            int tabY = windowY + 64;
             
             for (ShopCategory cat : ShopCategory.values()) {
                 boolean isSelected = (cat == currentCategory);
@@ -488,31 +514,44 @@ public class ShopScreen extends BaseRpgScreen {
             }
         }
         
-        // Draw page navigation - positioned below categories
-        int totalPages = Math.max(1, (int) Math.ceil((double) filteredItems.size() / (GRID_COLS * GRID_ROWS)));
-        int pageNavY = windowY + 64; // Below categories (which end at ~58)
-        drawCenteredText(graphics, "Page " + (currentPage + 1) + "/" + totalPages, 
-            windowX + windowWidth / 2, pageNavY + 2, COLOR_GRAY_TEXT);
+        // Draw scroll indicators and buttons
+        int scrollX = windowX + windowWidth - 30;
+        int scrollUpY = gridStartY;
+        int scrollDownY = gridStartY + (VISIBLE_ROWS * (ITEM_SIZE + ITEM_SPACING)) - 20;
+        int maxRows = (int) Math.ceil((double) filteredItems.size() / GRID_COLS);
         
-        // Previous/Next arrows
-        if (currentPage > 0) {
-            int prevX = windowX + 10;
-            boolean prevHover = isMouseOver(mouseX, mouseY, prevX, pageNavY, 24, 14);
-            graphics.fill(prevX, pageNavY, prevX + 24, pageNavY + 14, prevHover ? COLOR_BUTTON_HOVER : COLOR_BUTTON_BG);
-            drawText(graphics, "<<", prevX + 5, pageNavY + 3, prevHover ? COLOR_GOLD_TEXT : COLOR_WHITE_TEXT);
+        boolean canScrollUp = scrollOffset > 0;
+        boolean canScrollDown = scrollOffset < maxRows - VISIBLE_ROWS;
+        boolean upHovered = isMouseOver(mouseX, mouseY, scrollX, scrollUpY, 20, 16);
+        boolean downHovered = isMouseOver(mouseX, mouseY, scrollX, scrollDownY, 20, 16);
+        
+        // Scroll up button
+        if (canScrollUp || upHovered) {
+            graphics.fill(scrollX, scrollUpY, scrollX + 20, scrollUpY + 16, 
+                upHovered && canScrollUp ? COLOR_BUTTON_HOVER : (canScrollUp ? COLOR_BUTTON_BG : 0x40000000));
+            drawBorder(graphics, scrollX, scrollUpY, 20, 16, canScrollUp ? COLOR_GOLD_BORDER : 0x40888888);
+            drawCenteredText(graphics, "▲", scrollX + 10, scrollUpY + 4, canScrollUp ? COLOR_WHITE_TEXT : 0x60FFFFFF);
         }
-        if (currentPage < totalPages - 1) {
-            int nextX = windowX + windowWidth - 34;
-            boolean nextHover = isMouseOver(mouseX, mouseY, nextX, pageNavY, 24, 14);
-            graphics.fill(nextX, pageNavY, nextX + 24, pageNavY + 14, nextHover ? COLOR_BUTTON_HOVER : COLOR_BUTTON_BG);
-            drawText(graphics, ">>", nextX + 5, pageNavY + 3, nextHover ? COLOR_GOLD_TEXT : COLOR_WHITE_TEXT);
+        
+        // Scroll down button
+        if (canScrollDown || downHovered) {
+            graphics.fill(scrollX, scrollDownY, scrollX + 20, scrollDownY + 16, 
+                downHovered && canScrollDown ? COLOR_BUTTON_HOVER : (canScrollDown ? COLOR_BUTTON_BG : 0x40000000));
+            drawBorder(graphics, scrollX, scrollDownY, 20, 16, canScrollDown ? COLOR_GOLD_BORDER : 0x40888888);
+            drawCenteredText(graphics, "▼", scrollX + 10, scrollDownY + 4, canScrollDown ? COLOR_WHITE_TEXT : 0x60FFFFFF);
         }
+        
+        // Scroll position indicator
+        int totalItems = filteredItems.size();
+        int firstVisible = scrollOffset * GRID_COLS + 1;
+        int lastVisible = Math.min((scrollOffset + VISIBLE_ROWS) * GRID_COLS, totalItems);
+        String scrollText = "§7(" + firstVisible + "-" + lastVisible + " of " + totalItems + ")";
+        drawCenteredText(graphics, scrollText, windowX + windowWidth / 2, windowY + windowHeight - 20, COLOR_GRAY_TEXT);
         
         // Draw item grid
-        int startIndex = currentPage * GRID_COLS * GRID_ROWS;
-        for (int row = 0; row < GRID_ROWS; row++) {
+        for (int row = 0; row < VISIBLE_ROWS; row++) {
             for (int col = 0; col < GRID_COLS; col++) {
-                int index = startIndex + row * GRID_COLS + col;
+                int index = (scrollOffset + row) * GRID_COLS + col;
                 if (index >= filteredItems.size()) break;
                 
                 Item item = filteredItems.get(index);

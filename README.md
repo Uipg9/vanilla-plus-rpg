@@ -32,18 +32,21 @@ A clean, code-only Minecraft Fabric mod for **1.21.11** that adds an RPG progres
 - Action bar HUD showing level, money, and XP progress
 
 ### 🛒 Shop System
-- Catalog-style shop (not inventory slots!)
+- Scrollable catalog-style shop (no pagination!)
 - **100+ items** organized into categories:
   - All, Tools, Weapons, Armor, Food, Building, Farming, Ores, Misc
 - Items sorted logically (pickaxes together, axes together, etc.)
+- Smooth mouse wheel scrolling for easy browsing
+- 6 visible rows with scroll indicators
 - Hidden "Black Market" for rare items (hold Shift!)
 - Market rotates daily with bonus prices
 
 ### 🔥 Smithing System
-- Smelting items in furnaces gives Smithing XP and money!
-- Higher Smithing level = more rewards (+5% per level)
+- Smelting items in furnaces gives vanilla Minecraft XP and money!
+- Higher Smithing skill level = more rewards (+5% per level)
 - Works with all furnace types (furnace, blast furnace, smoker)
-- Rewards for smelting: Iron, Gold, Copper, Netherite, Glass, Bricks, etc.
+- Rewards for smelting: Iron, Gold, Copper, Netherite, Glass, Bricks, Charcoal, etc.
+- Instant notification when taking smelted items
 
 ## Screenshots
 
@@ -115,7 +118,7 @@ A clean, code-only Minecraft Fabric mod for **1.21.11** that adds an RPG progres
 - Sprint 100 blocks = 5 XP + $3
 - (Max once per 30 seconds)
 
-### Smelting Rewards (Smithing Skill)
+### Smelting Rewards (With Smithing Skill Bonus)
 | Smelted Item | XP | Money |
 |--------------|-----|-------|
 | Iron Ingot | 3 | $2 |
@@ -127,7 +130,7 @@ A clean, code-only Minecraft Fabric mod for **1.21.11** that adds an RPG progres
 | Charcoal | 1 | $1 |
 | Brick | 1 | $1 |
 
-*Higher Smithing level = +5% bonus per level!*
+*XP is vanilla Minecraft XP (used for enchanting). Higher Smithing level = +5% bonus per level to both XP and money!*
 
 ### Level Formula
 - XP needed = Level * 100

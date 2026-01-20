@@ -65,7 +65,7 @@ public class SkillsScreen extends BaseRpgScreen {
             playClickSound();
             if (scrollOffset < 6 - VISIBLE_SKILLS) scrollOffset++;
             rebuildSkillButtons();
-        }).bounds(windowX + windowWidth - 30, windowY + windowHeight - 55, 20, 16).build());
+        }).bounds(windowX + windowWidth - 30, windowY + windowHeight - 40, 20, 16).build());
         
         rebuildSkillButtons();
     }
@@ -126,7 +126,7 @@ public class SkillsScreen extends BaseRpgScreen {
         drawScrollButton(graphics, scrollUpX, scrollUpY, 20, 16, "▲", upHovered && canScrollUp, canScrollUp);
         
         // Draw scroll down button
-        int scrollDownY = windowY + windowHeight - 55;
+        int scrollDownY = windowY + windowHeight - 40;
         boolean canScrollDown = scrollOffset < 6 - VISIBLE_SKILLS;
         boolean downHovered = isMouseOver(mouseX, mouseY, scrollUpX, scrollDownY, 20, 16);
         drawScrollButton(graphics, scrollUpX, scrollDownY, 20, 16, "▼", downHovered && canScrollDown, canScrollDown);

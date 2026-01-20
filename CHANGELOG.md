@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-01-20
+
+### Fixed
+- **Shop Screen**: Balance text now positioned below title (no longer overlaps)
+- **Shop Screen**: Converted from pagination to smooth vertical scrolling
+  - Increased visible rows from 4 to 6
+  - Added mouse wheel support for scrolling
+  - Added scroll up/down buttons with indicators
+  - Shows item range (e.g., "1-36 of 120")
+- **Skills Screen**: Down arrow button moved lower (no longer covered)
+- **Smelting Rewards**: Now properly grant vanilla Minecraft XP (used for enchanting)
+  - Rewards shown as "🔥 +3 Smithing | +$2" with purple fire emoji
+  - Smithing skill level still provides +5% bonus to both XP and money
+
+### Changed
+- Shop window increased to 450x420 (from 420x360) to accommodate scrolling
+- Shop grid increased to 6 visible rows (from 4)
+- Improved scrolling UX with clear indicators
+
 ## [1.0.0] - 2026-01-19
 
 ### Added

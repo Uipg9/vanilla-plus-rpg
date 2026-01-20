@@ -107,14 +107,17 @@ public abstract class FurnaceResultSlotMixin {
         int finalXp = (int) Math.ceil(baseXp * bonus);
         long finalMoney = (long) Math.ceil(baseMoney * bonus);
         
-        // Grant money (XP is handled differently - through the skill upgrade system)
+        // Grant money
         if (finalMoney > 0) {
             PlayerDataManager.addMoney(serverPlayer, finalMoney);
         }
         
+        // Grant vanilla Minecraft XP (used for enchanting, displayed in notification)
+        if (finalXp > 0) {
+            serverPlayer.giveExperiencePoints(finalXp);
+        }
+        
         // Send notification - use reward type 4 for smelting
-        // Note: RewardNotificationPayload expects (xp, money, vanillaXp, rewardType)
-        // We send finalXp as a visual indicator even though skill XP is handled separately
         if (finalXp > 0 || finalMoney > 0) {
             try {
                 PlayerDataSyncHandler.RewardNotificationPayload payload = 
