@@ -3,6 +3,7 @@ package com.vanillaplus.rpg.mixin;
 import com.vanillaplus.rpg.data.PlayerDataManager;
 import com.vanillaplus.rpg.network.PlayerDataSyncHandler;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.FurnaceResultSlot;
@@ -123,6 +124,11 @@ public abstract class FurnaceResultSlotMixin {
                 PlayerDataSyncHandler.RewardNotificationPayload payload = 
                     new PlayerDataSyncHandler.RewardNotificationPayload(finalXp, finalMoney, 0, 4);
                 ServerPlayNetworking.send(serverPlayer, payload);
+                
+                // Also send to chat for longer visibility
+                String itemName = BuiltInRegistries.ITEM.getKey(item).getPath();
+                String msg = String.format("§d🔥 Smelted %dx %s: §d+%d XP §a+$%d", count, itemName, finalXp, finalMoney);
+                serverPlayer.sendSystemMessage(net.minecraft.network.chat.Component.literal(msg));
             } catch (Exception e) {
                 // Silently fail if networking fails
             }

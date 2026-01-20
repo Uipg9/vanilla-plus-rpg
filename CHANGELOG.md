@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.2] - 2026-01-20
+
+### Improved
+- **Smelting Notifications**: Now show both action bar AND chat message for better visibility
+- Chat messages include item name and count (e.g., "🔥 Smelted 5x gold_ingot: +25 XP +$25")
+- Longer-lasting feedback for smelting rewards
+
+### Confirmed Compatibility
+- Block breaking system fully compatible with **vein miner/tree chopper** mods
+- Rewards scale automatically per block broken (XP/money multiply correctly)
+- Example: Breaking 20 logs with tree chopper = 20x the rewards
+
 ## [1.1.1] - 2026-01-20
 
 ### Fixed
